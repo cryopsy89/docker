@@ -1,0 +1,31 @@
+version: '3.8'
+services:
+  elastic-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: docker_agent_${AGENT_HOSTNAME}
+    hostname: docker_agent_${AGENT_HOSTNAME}
+    user: elastic-agent
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "150m"
+        max-file: "3"
+    network_mode: host
+    shm_size: "1gb"
+    environment:
+      FLEET_URL: "FLEET_URL:8220"
+      FLEET_ENROLLMENT_TOKEN: "${FLEET_ENROLLMENT_TOKEN:?Set FLEET_ENROLLMENT_TOKEN in manual/.env}"
+      FLEET_INSECURE: "true"
+      FLEET_ENROLL: "1"
+      FLEET_AGENT_NAME: "docker_agent_hostname${AGENT_HOSTNAME}"
+      SYNTHETICS_LIMIT_BROWSER: "8"
+    cap_add:
+      - NET_RAW
+      - SETUID
+    volumes:
+      - elastic-agent-state:/usr/share/elastic-agent/state
+volumes:
+  elastic-agent-state:
